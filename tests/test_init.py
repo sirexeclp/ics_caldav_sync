@@ -65,6 +65,7 @@ class TestInit:
 
         assert obj.sync_all is True
         assert obj.keep_local is True
+        assert obj.keep_local_past is False
         assert obj.timezone is None
         assert obj.ignored_compare_fields == []
 
@@ -110,6 +111,11 @@ class TestInit:
         )
         assert obj.timezone == dateutil.tz.gettz("Europe/Warsaw")
         assert obj.ignored_compare_fields == ["DTSTAMP", "SEQUENCE"]
+
+    def test_keep_local_past_is_stored(self, mocked_clients):
+        obj = ICSToCalDAV(**base_kwargs(keep_local_past=True))
+
+        assert obj.keep_local_past is True
 
     def test_invalid_timezone_exits(self, mocked_clients):
         with pytest.raises(SystemExit) as excinfo:

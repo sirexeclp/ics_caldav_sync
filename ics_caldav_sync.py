@@ -48,6 +48,7 @@ class ICSToCalDAV:
     * remote_tls_verify (bool, optional): Verify the ICS host's TLS certificate. Set to False for self-signed certificates.
     * sync_all (bool, optional): Sync past events.
     * keep_local (bool, optional): Do not delete events on the CalDAV server that do not exist in the ICS file.
+    * keep_local_past (bool, optional): Do not delete past local events.
     * timezone (str, optional): Override events timezone. See: https://dateutil.readthedocs.io/en/stable/tz.html
     * ignored_compare_fields(str, optional): Fields that are ignored when checking if an event needs to be updated.
     """
@@ -68,6 +69,7 @@ class ICSToCalDAV:
         remote_tls_verify: bool = True,
         sync_all: bool = False,
         keep_local: bool = False,
+        keep_local_past: bool = False,
         timezone: str | None = None,
         ignored_compare_fields: str | None = None,
     ):
@@ -115,6 +117,7 @@ class ICSToCalDAV:
 
         self.sync_all = sync_all
         self.keep_local = keep_local
+        self.keep_local_past = keep_local_past
 
         self.ignored_compare_fields = ignored_compare_fields.split(" ") if ignored_compare_fields else []
 
@@ -150,9 +153,10 @@ class ICSToCalDAV:
         2) Loads them to ics library so their UID can be pulled,
         3) Pulls all the UIDs and returns them.
 
-        If sync_all is set, then all events will be pulled.
+        If sync_all is set and keep_local_past is not set, then all events
+        will be pulled. Otherwise, only future events will be pulled.
         """
-        if self.sync_all:
+        if self.sync_all and not getattr(self, "keep_local_past", False):
             local_events = self.local_calendar.events()
         else:
             try:
@@ -373,6 +377,7 @@ def main():
         "remote_tls_verify": not os.getenv("REMOTE_TLS_NO_VERIFY", False),
         "sync_all": bool(os.getenv("SYNC_ALL", False)),
         "keep_local": bool(os.getenv("KEEP_LOCAL", False)),
+        "keep_local_past": bool(os.getenv("KEEP_LOCAL_PAST", False)),
         "timezone": os.getenv("TIMEZONE") or None,
         "ignored_compare_fields": os.getenv("IGNORED_COMPARE_FIELDS") or None,
     }

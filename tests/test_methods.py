@@ -193,6 +193,15 @@ class TestGetLocalEventsIds:
         lister.local_calendar.search.assert_called_once()
         lister.local_calendar.events.assert_not_called()
 
+    def test_keep_local_past_uses_search_even_with_sync_all(self, lister):
+        lister.sync_all = True
+        lister.keep_local_past = True
+        lister.local_calendar.search.return_value = [make_local_event("A")]
+
+        assert lister._get_local_events_ids() == {"A"}
+        lister.local_calendar.search.assert_called_once()
+        lister.local_calendar.events.assert_not_called()
+
     def test_report_error_is_reraised(self, lister):
         lister.sync_all = False
         lister.local_calendar.search.side_effect = caldav.lib.error.ReportError

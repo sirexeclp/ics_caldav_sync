@@ -19,6 +19,7 @@ OPTIONAL = [
     "SYNC_EVERY",
     "SYNC_ALL",
     "KEEP_LOCAL",
+    "KEEP_LOCAL_PAST",
     "TIMEZONE",
     "IGNORED_COMPARE_FIELDS",
     "LOCAL_AUTH",
@@ -129,6 +130,7 @@ class TestMainSettingsParsing:
         assert kwargs["ignored_compare_fields"] is None
         assert kwargs["local_tls_verify"] is True
         assert kwargs["remote_tls_verify"] is True
+        assert kwargs["keep_local_past"] is False
 
     def test_non_default_values_are_read_from_env(self, env, mock_cls):
         env.setenv("LOCAL_URL", "https://dav.example/")
@@ -141,6 +143,7 @@ class TestMainSettingsParsing:
         env.setenv("REMOTE_PASSWORD", "hunter2")
         env.setenv("TIMEZONE", "Europe/Warsaw")
         env.setenv("IGNORED_COMPARE_FIELDS", "DTSTAMP SEQUENCE")
+        env.setenv("KEEP_LOCAL_PAST", "1")
 
         ics_caldav_sync.main()
 
@@ -155,6 +158,7 @@ class TestMainSettingsParsing:
         assert kwargs["remote_password"] == "hunter2"
         assert kwargs["timezone"] == "Europe/Warsaw"
         assert kwargs["ignored_compare_fields"] == "DTSTAMP SEQUENCE"
+        assert kwargs["keep_local_past"] is True
 
     def test_sync_all_truthiness_is_buggy(self, env, mock_cls):
         # Documents a latent bug: bool(os.getenv("SYNC_ALL", False)) is True for
